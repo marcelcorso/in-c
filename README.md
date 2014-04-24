@@ -2,9 +2,9 @@
 
 A [Brunch](http://brunch.io) skeleton for quickly getting started with your project.
 
-It provides as plugins [Coffeescript](http://bower.io), [Stylus](http://bower.io) and [Eco](http://bower.io).
+It provides as plugins [Coffeescript](http://coffeescript.org/), [Stylus](http://learnboost.github.io/stylus/) and [Eco](https://github.com/sstephenson/eco).
 
-Beside that, the output js will come out wrapped as it would if compiled by the coffeescript compiler and all [Eco](http://bower.io) templates will live on a global JST variable like some are used to.
+Beside that, the output js will come out wrapped as it would if compiled by the coffeescript compiler and all [Eco](https://github.com/sstephenson/eco) templates will live on a global JST variable like some are used to.
 
 
 
