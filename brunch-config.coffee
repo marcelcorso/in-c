@@ -3,7 +3,7 @@ exports.config =
   files:
     javascripts:
       joinTo:
-        'javascripts/app.js': /^app/
+        'javascripts/app.js': /^app(\/|\\)(?!templates)/
         'javascripts/vendor.js': /^(?!app)/
     stylesheets:
       joinTo: 'stylesheets/app.css'
@@ -13,10 +13,8 @@ exports.config =
   # clean compiled js file from modules header and wrap it like coffeescript should
   modules:
     definition: false
-    wrapper: (path, data) ->
-      """
-    (function() {
-      'use strict';
-      #{data}
-    }).call(this);
-      """
+    wrapper: false
+
+  plugins:
+    eco:
+      namespace: "JST"

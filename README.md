@@ -1,6 +1,12 @@
-# Brunch app
+# Brunch on a diet
 
-This is HTML5 application, built with [Brunch](http://brunch.io).
+A [Brunch](http://brunch.io) skeleton for quickly getting started with your project.
+
+It provides as plugins [Coffeescript](http://bower.io), [Stylus](http://bower.io) and [Eco](http://bower.io).
+
+Beside that, the output js will come out wrapped as it would if compiled by the coffeescript compiler and all [Eco](http://bower.io) templates will live on a global JST variable like some are used to.
+
+
 
 ## Getting started
 * Install (if you don't have them):
@@ -14,4 +20,4 @@ This is HTML5 application, built with [Brunch](http://brunch.io).
 * Learn:
     * `public/` dir is fully auto-generated and served by HTTP server.  Write your code in `app/` dir.
     * Place static files you want to be copied from `app/assets/` to `public/`.
-    * [Brunch site](http://brunch.io), [Chaplin site](http://chaplinjs.org)
+    
