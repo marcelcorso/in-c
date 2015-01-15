@@ -40,22 +40,16 @@ class Sequencer
     @pattern += 1
     @play(@pattern)
     
-
   play: (pattern) ->
     console.debug("start playing pattern")
 
 class PeerSequencer extends Sequencer
   constructor: (peerId) ->
+    super()
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
 
-    @inC.firebase.child('patternFor' + peerId).once('value', (value) ->
-      @pattern = value
-      @play(@pattern)
-      if @onUpdate?
-        @onUpdate()
-
-    @firebase.getNotifiedWhenItChanges 'patternFor' + peerId, (value) ->
+    inC.firebase.child('patternFor' + peerId).on 'value', (value) =>
       @pattern = value
       @play(@pattern)
       if @onUpdate?
