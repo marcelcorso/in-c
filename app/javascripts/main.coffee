@@ -16,7 +16,13 @@ class Ui
     $('#next').on 'click', (e) =>
       nop(e)
       @sequencer.next()
+
+      inC.firebase.child('patternFor' + inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
+
       $('#currentPattern').html(@sequencer.pattern)
+
+    $('#name').on 'change',  (e) =>
+       inC.name = $('#name').val()
     # more ui events go here
 
 class PeerSequencerUi
@@ -38,6 +44,7 @@ class Sequencer
 
   next: ->
     @pattern += 1
+
     @play(@pattern)
     
   play: (pattern) ->
@@ -55,13 +62,45 @@ class PeerSequencer extends Sequencer
       if @onUpdate?
         @onUpdate()
 
+
+
+
+
 class InC
+
   constructor: ->
+    console.log('yolfsfsdfsd')
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
+    @firebase.authAnonymously((error, authdata) -> 
+
+      console.log('Authed! ' + authdata)
+
+      )
+    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com.firebaseio.com/.info/connected');
+    @amOnline.on('value'), (snapshot) -> 
+      console.log('yolo + ' snapshot)
+      aPeerChanged(snapshot)
+    )
+    @name = 'gimmeaname'
+
+  aPeerChanged: (snapshot) ->
+    if snapshot.val() 
+      peerCameOnline(snapshot)
+    else
+        peerWentOffline(snapshot)
+
+  peerCameOnline: (peerID) ->
+    console.log('Peer ' + peerID + ' came online.')
+
+  peerWentOffline: (peerID) ->
+    console.log('Peer ' + peerID +  'went offline')
+
 
   broadcastPattern: ->
     @firebase.set sequencer.pattern, ->
       console.debug('done setting the value on firebase')
+
+
 
 
   loadMidis: ->
