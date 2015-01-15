@@ -7,7 +7,6 @@ class Ui
     @sequencer = sequencer
     @setupEvents()
 
-    console.debug("yuoooo")
     console.debug($('#currentPattern'))
 
     $('#currentPattern').html(@sequencer.pattern)
@@ -17,12 +16,12 @@ class Ui
       nop(e)
       @sequencer.next()
 
-      inC.firebase.child('patternFor' + inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
+      inC.firebase.child('patternIndexes').child(inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
 
       $('#currentPattern').html(@sequencer.pattern)
 
     $('#name').on 'change',  (e) =>
-       inC.name = $('#name').val()
+      inC.changedName($('#name').val())
 
     # more ui events go here
     $('#playAll').on 'click', (e) =>
@@ -45,9 +44,8 @@ class PeerSequencerUi
     $('#peerSequencers').append(JST['peerSequencer'](sequencer: peerSequencer))
     @setEvents()
 
-  setEvents: () ->
-    @peerSequencer.onUpdate = =>
-      $('#s' + @peerSequencer.peerId).html(@peerSequencer.pattern)
+  setEvents: () =>
+    $('#s' + @peerSequencer.peerId).html(@peerSequencer.pattern)
 
 class Sequencer
 
@@ -75,44 +73,57 @@ class PeerSequencer extends Sequencer
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
 
-    inC.firebase.child('patternFor' + peerId).on 'value', (value) =>
+    inC.firebase.child('patternIndexes').child('patternFor' + peerId).on 'value', (value) =>
       @pattern = value
       @play(@pattern)
       if @onUpdate?
         @onUpdate()
 
-
-
-
-
 class InC
 
   constructor: ->
-    console.log('yolfsfsdfsd')
+    
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
-    @firebase.authAnonymously( (error, authdata) ->
-      console.log('Authed! ' + authdata)
+    @firebase.authAnonymously( (error, authdata) =>
+      console.log('Authed! ' + authdata.uid)
+      
     )
 
-    
-    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
-    @amOnline.on 'value', (snapshot) ->
-      console.log('yolo + ' + snapshot)
-    #   aPeerChanged(snapshot)
+    @firebase.child("patternIndexes").on("child_changed", (snapshot) =>
+      peer = snapshot.key()
+      pattern = snapshot.val()
 
-    @name = 'gimmeaname'
+      console.log("peer " + peer + "changed to pattern " + pattern)
+
+      ) 
+    
+
+    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
+    @amOnline.on('value', (snapshot) =>
+
+      console.log('yolo + ' + snapshot)
+      @aPeerChanged(snapshot)
+    )
+
+
+
+  changedName: (name) ->
+    @name = name
+    ref = @firebase.child('users').push(name)
+    ref.onDisconnect().remove()
+
 
   aPeerChanged: (snapshot) ->
     if snapshot.val() 
-      peerCameOnline(snapshot)
+      @peerCameOnline(snapshot)
     else
-        peerWentOffline(snapshot)
+      @peerWentOffline(snapshot)
 
   peerCameOnline: (peerID) ->
-    console.log('Peer ' + peerID + ' came online.')
+    console.log('Peer ' + peerID.val() + ' came online.')
 
   peerWentOffline: (peerID) ->
-    console.log('Peer ' + peerID +  'went offline')
+    console.log('Peer ' + peerID.val() +  'went offline')
 
 
   broadcastPattern: ->
@@ -125,7 +136,7 @@ class InC
   loadMidis: ->
     console.debug("loadMidis")
 
-  pickInstrument: ->
+  pickInstrument: ->  
     console.debug("pickInstrument")
 
   startSoloSequencer: ->
