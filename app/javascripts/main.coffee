@@ -1,3 +1,5 @@
+#import synth.js
+
 nop = (e) ->
   e.preventDefault()
 
@@ -51,7 +53,6 @@ class Sequencer
 
   constructor: ->
     @pattern = 1
-    @start()
 
   next: ->
     @pattern += 1
@@ -72,13 +73,15 @@ class Sequencer
       for note in notesOnTick
         if note.subtype == 'noteOn'
           console.debug("on " + note.deltaTime + " play " + note.noteNumber)
+          @player.noteOn(note.noteNumber, noteToFreq(note.noteNumber));
           # PLAY note
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
           console.debug("on " + note.deltaTime + " stop " + note.noteNumber)
+          # noteOff(note.noteNumber);
 
       @tick += 1
-    ), 100)
+    ), 10000)
 
 
   stop: ->
@@ -171,6 +174,8 @@ class InC
 
   startSoloSequencer: ->
     @soloSequencer = new Sequencer()
+    @soloSequencer.player = new Player()
+    @soloSequencer.start()
     @ui = new Ui(@soloSequencer)
 
   startGroupSequencer: ->

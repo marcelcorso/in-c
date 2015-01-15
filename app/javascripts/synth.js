@@ -2,10 +2,15 @@ var context = new webkitAudioContext();
 
 var Player = (function(context) {
 
-	function Player(id) {
+	function Player() {
 
 		this.filterValue = (Math.random() * 10000) + 300;
-		this.envelope = (Math.random() * 2);
+	}
+
+	function noteOn(note, frequency) {
+
+		var voice = new Voice(frequency, this.filterValue);
+    	voice.start();
 	}
 
 	return Player;
@@ -33,7 +38,7 @@ var Voice = (function(context) {
 		var now = context.currentTime;
 	    vca.gain.cancelScheduledValues(now);
 		vca.gain.setValueAtTime(vca.gain.value, now);
-		vca.gain.linearRampToValueAtTime(0 , now + (Math.random() * 2));
+		vca.gain.linearRampToValueAtTime(0 , now + 1);
 
 		var filter = context.createBiquadFilter();
 		filter.type = 'lowpass';
@@ -47,46 +52,28 @@ var Voice = (function(context) {
 
 	   	this.oscillators.push(vco);
 	};
-	/*
+	
 	Voice.prototype.stop = function() {
 
 	 	this.oscillators.forEach(function(oscillator, _) {
 
 	 		oscillator.stop();
 		});
-	}; */
+	};
 
 	return Voice;
 
 })(context);
 
-/*
+var active_voices = {};
+
 function noteOff(note, _) {
   
   	active_voices[note].stop();
   	delete active_voices[note];
-};
-*/
-
-function newPlayer(id) {
-
-	var player = new Player(id);
-}
-
-function noteOn(frequency) {
-
-	var voice = new Voice(frequency, (Math.random() * 10000) + 300);
-    voice.start();
 }
 
 function noteToFreq(note) {
 
 	return Math.pow(2, (note-69)/12)*440;
-}
-
-setInterval(playNote, 200);
-
-function playNote() {
-
-	noteOn(noteToFreq(40));
 }
