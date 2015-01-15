@@ -49,7 +49,7 @@ class PeerSequencer extends Sequencer
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
 
-    @firebase.get 'patternFor' + peerId, (value) ->
+    @inC.firebase.child('patternFor' + peerId).once('value', (value) ->
       @pattern = value
       @play(@pattern)
       if @onUpdate?
@@ -113,7 +113,7 @@ class InC
 
 $ ->
   console.log("DOM is ready")
-  inC = new InC
+  window.inC = new InC
   inC.go()
 
 
