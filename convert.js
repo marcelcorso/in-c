@@ -1,3 +1,8 @@
+
+// run me like this:
+// marcel@palpatine:~/development/in-c$ node convert.js 
+
+
 var fs = require('fs');
 var midiConverter = require('midi-converter');
 
