@@ -1,6 +1,3 @@
-var fireRef = new FireBase("blinding-heat-8749.firebaseio.com")
-
-
 nop = (e) ->
   e.preventDefault()
 
@@ -65,14 +62,11 @@ class PeerSequencer
 
 class InC
   constructor: ->
-    console.debug("akjas")
-
-  initFB: ->
-    fireRef.set("test") 
+    @firebase = new FireBase("blinding-heat-8749.firebaseio.com")
 
   broadcastPattern: ->
-    fireRef.(sequencer.pattern)
-
+    @firebase.set sequencer.pattern, ->
+      console.debug('done setting the value on firebase')
 
 
   loadMidis: ->
