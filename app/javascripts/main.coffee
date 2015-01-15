@@ -77,11 +77,8 @@ class Sequencer
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
           console.debug("on " + note.deltaTime + " stop " + note.noteNumber)
-          # noteOff(note.noteNumber);
-
       @tick += 1
-    ), 10000)
-
+    ), 20)
 
   stop: ->
     console.debug("stop playing")
