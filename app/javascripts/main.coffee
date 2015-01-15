@@ -63,7 +63,7 @@ class PeerSequencer extends Sequencer
 
 class InC
   constructor: ->
-    @firebase = new FireBase("blinding-heat-8749.firebaseio.com")
+    @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
 
   broadcastPattern: ->
     @firebase.set sequencer.pattern, ->
