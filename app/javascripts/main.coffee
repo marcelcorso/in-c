@@ -75,7 +75,7 @@ class PeerSequencer extends Sequencer
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
 
-    inC.firebase.child('patternFor' + peerId).on 'value', (value) =>
+    inC.firebase.child('patternIndexes').child('patternFor' + peerId).on 'value', (value) =>
       @pattern = value
       @play(@pattern)
       if @onUpdate?
