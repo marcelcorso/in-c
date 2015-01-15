@@ -12,19 +12,22 @@ class Ui
 
     $('#currentPattern').html(@sequencer.pattern)
 
-  setupEvents: ->
+  setupEvents: () =>
     $('#next').on 'click', (e) =>
       nop(e)
       @sequencer.next()
 
-      inC.firebase.child('patternIndexes').child(inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
-
+      inC.firebase.child('users').child(inC.authid).child('pattern').set(@sequencer.pattern, () -> console.log('value.set'))  
+      
       $('#currentPattern').html(@sequencer.pattern)
 
     $('#name').on 'change',  (e) =>
       inC.changedName($('#name').val())
-
+      
     # more ui events go here
+
+
+
     $('#playAll').on 'click', (e) =>
       for s in @peerSequencers
         s.start()
@@ -65,6 +68,7 @@ class Sequencer
     console.debug("actually start playing")
     @tick = 0
     @timeoutHandle = setInterval( (=>
+      console.debug("yo:" + @pattern)
       index = (@tick % inC.score[@pattern].maxDeltaTime)
       if (index == 0)
         console.debug("----------------")
@@ -89,8 +93,11 @@ class PeerSequencer extends Sequencer
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
 
-    inC.firebase.child('patternIndexes').child('patternFor' + peerId).on 'value', (value) =>
-      @pattern = value
+    console.debug(peerId)
+    inC.firebase.child('users').child(peerId).once 'value', (value) =>
+      console.debug("ni: ")
+      console.debug(value.val() )
+      @pattern = value.val()
       @play(@pattern)
       if @onUpdate?
         @onUpdate()
@@ -99,27 +106,53 @@ class InC
 
   constructor: ->
     
+    @peerSequencers = []
+    @peerSequencerUis = []
+
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
     @firebase.authAnonymously( (error, authdata) =>
       console.log('Authed! ' + authdata.uid)
+      @authid = authdata.uid
+      delref = @firebase.child('users').child(@authid).child('pattern').set(1)
+      
+      
+      
+
     )
 
-    @firebase.child("patternIndexes").on("child_changed", (snapshot) =>
+    @firebase.child("users").on("child_changed", (snapshot) =>
       peer = snapshot.key()
       pattern = snapshot.val()
 
-      console.log("peer " + peer + "changed to pattern " + pattern)
+      console.log("peer " + peer + "changed pattern")
+      
+      found = false
+      for s in @peerSequencerUis
+        if s.peerSequencer.PeerId == peer
+          s.peerSequencer.pattern = pattern
+          s.setEvents() 
+          console.log("found peerkey: " + peer + " changed")
+          found = true
+       
+        if !found
+          peerSequencer = new PeerSequencer(peer)
+          console.debug(peerSequencer)
+          @peerSequencers.push(peerSequencer)
+          @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
+
     )
 
     @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
+
     @amOnline.on 'value', (snapshot) =>
       console.log('yolo + ' + snapshot)
       @aPeerChanged(snapshot)
 
   changedName: (name) ->
     @name = name
-    ref = @firebase.child('users').push(name)
-    ref.onDisconnect().remove()
+    console.debug("changedname: " + name + "authid: " + @authid)
+    ref = @firebase.child('users').child(@authid).child('name').set(name)
+   #  ref.onDisconnect().remove()
 
 
   aPeerChanged: (snapshot) ->
@@ -175,20 +208,33 @@ class InC
     @ui = new Ui(@soloSequencer)
 
   startGroupSequencer: ->
+    
+    # TODO
+    # console.debug('fdsfds')
+    # console.debug(@firebase.child('users').val())
 
-    # TODO 
-    @peerIds = ['Vincent', 'Corne', 'Marcel']
-    @peerSequencers = []
-    @peerSequencerUis = []
-    for peerId in @peerIds
-      peerSequencer = new PeerSequencer(peerId)
-      @peerSequencers.push(peerSequencer)
-      @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
+    peers = @firebase.child('users').once('value', (snapshot) => 
+      snapshot.forEach((childSnapshot) => 
+        console.debug('key : ' + childSnapshot.key() +  " value: " + childSnapshot.val())
+        peerkey = childSnapshot.key()
+        peerSequencer = new PeerSequencer(peerkey)
+        console.debug(peerSequencer)
+        @peerSequencers.push(peerSequencer)
+        @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
+        )
+      )
+    
+    
+    
+    # for peerId in @peerIds
+    #   peerSequencer = new PeerSequencer(peerId)
+    #  @peerSequencers.push(peerSequencer)
+    # @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
 
   startSequencer: ->
     console.debug("startSequencer")
     @startSoloSequencer()
-    # @startGroupSequencer()
+    @startGroupSequencer()
 
   startPatternSharer: () ->
     console.debug("startPatternSharer")
