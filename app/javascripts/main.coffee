@@ -16,8 +16,7 @@ class Ui
       nop(e)
       @sequencer.next()
 
-      
-      inC.firebase.child('patternIndexes').child('patternFor' + inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
+      inC.firebase.child('patternIndexes').child(inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
 
       $('#currentPattern').html(@sequencer.pattern)
 
@@ -45,9 +44,8 @@ class PeerSequencerUi
     $('#peerSequencers').append(JST['peerSequencer'](sequencer: peerSequencer))
     @setEvents()
 
-  setEvents: () ->
-    @peerSequencer.onUpdate = =>
-      $('#s' + @peerSequencer.peerId).html(@peerSequencer.pattern)
+  setEvents: () =>
+    $('#s' + @peerSequencer.peerId).html(@peerSequencer.pattern)
 
 class Sequencer
 
@@ -95,6 +93,13 @@ class InC
       
     )
 
+    @firebase.child("patternIndexes").on("child_changed", (snapshot) =>
+      peer = snapshot.key()
+      pattern = snapshot.val()
+
+      console.log("peer " + peer + "changed to pattern " + pattern)
+
+      ) 
     
 
     @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
@@ -103,6 +108,8 @@ class InC
       console.log('yolo + ' + snapshot)
       @aPeerChanged(snapshot)
     )
+
+
 
   changedName: (name) ->
     @name = name
