@@ -1,0 +1,2 @@
+<div>
+  <%= @sequencer.peerId %> is playing pattern <span id="s<%= @sequencer.peerId %>"><%= @sequencer.pattern %></span>
