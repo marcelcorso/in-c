@@ -7,7 +7,6 @@ class Ui
     @sequencer = sequencer
     @setupEvents()
 
-    console.debug("yuoooo")
     console.debug($('#currentPattern'))
 
     $('#currentPattern').html(@sequencer.pattern)
@@ -17,12 +16,13 @@ class Ui
       nop(e)
       @sequencer.next()
 
-      inC.firebase.child('patternFor' + inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
+      
+      inC.firebase.child('patternIndexes').child('patternFor' + inC.name).set(@sequencer.pattern, () -> console.log('value.set'))
 
       $('#currentPattern').html(@sequencer.pattern)
 
     $('#name').on 'change',  (e) =>
-       inC.name = $('#name').val()
+      inC.changedName($('#name').val())
 
     # more ui events go here
     $('#playAll').on 'click', (e) =>
@@ -90,29 +90,37 @@ class InC
   constructor: ->
     console.log('yolfsfsdfsd')
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
-    @firebase.authAnonymously( (error, authdata) ->
-      console.log('Authed! ' + authdata)
+    @firebase.authAnonymously( (error, authdata) =>
+      console.log('Authed! ' + authdata.uid)
+      
     )
 
     
-    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
-    @amOnline.on 'value', (snapshot) ->
-      console.log('yolo + ' + snapshot)
-    #   aPeerChanged(snapshot)
 
-    @name = 'gimmeaname'
+    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
+    @amOnline.on('value', (snapshot) =>
+
+      console.log('yolo + ' + snapshot)
+      @aPeerChanged(snapshot)
+    )
+
+  changedName: (name) ->
+    @name = name
+    ref = @firebase.child('users').push(name)
+    ref.onDisconnect().remove()
+
 
   aPeerChanged: (snapshot) ->
     if snapshot.val() 
-      peerCameOnline(snapshot)
+      @peerCameOnline(snapshot)
     else
-        peerWentOffline(snapshot)
+      @peerWentOffline(snapshot)
 
   peerCameOnline: (peerID) ->
-    console.log('Peer ' + peerID + ' came online.')
+    console.log('Peer ' + peerID.val() + ' came online.')
 
   peerWentOffline: (peerID) ->
-    console.log('Peer ' + peerID +  'went offline')
+    console.log('Peer ' + peerID.val() +  'went offline')
 
 
   broadcastPattern: ->
@@ -125,7 +133,7 @@ class InC
   loadMidis: ->
     console.debug("loadMidis")
 
-  pickInstrument: ->
+  pickInstrument: ->  
     console.debug("pickInstrument")
 
   startSoloSequencer: ->
