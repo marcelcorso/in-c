@@ -1,4 +1,3 @@
-#import synth.js
 
 nop = (e) ->
   e.preventDefault()
