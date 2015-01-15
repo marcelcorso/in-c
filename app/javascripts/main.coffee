@@ -79,14 +79,10 @@ class PeerSequencer extends Sequencer
       if @onUpdate?
         @onUpdate()
 
-
-
-
-
 class InC
 
   constructor: ->
-    console.log('yolfsfsdfsd')
+    
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
     @firebase.authAnonymously( (error, authdata) =>
       console.log('Authed! ' + authdata.uid)
