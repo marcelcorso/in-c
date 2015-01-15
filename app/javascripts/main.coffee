@@ -116,9 +116,11 @@ class InC
     @firebase.authAnonymously( (error, authdata) =>
       console.log('Authed! ' + authdata.uid)
       @authid = authdata.uid
-      @firebase.child('users').child(@authid).child('pattern').set(1).onDisconnect().remove()
+      delref = @firebase.child('users').child(@authid).child('pattern').set(1)
       
       
+      
+
     )
 
     @firebase.child("users").on("child_changed", (snapshot) =>
@@ -127,17 +129,24 @@ class InC
 
       console.log("peer " + peer + "changed pattern")
       
+      found = false
       for s in @peerSequencerUis
         if s.peerSequencer.PeerId == peer
           s.peerSequencer.pattern = pattern
           s.setEvents() 
-
-
-
+          console.log("found peerkey: " + peer + " changed")
+          found = true
+       
+        if !found
+          peerSequencer = new PeerSequencer(peer)
+          console.debug(peerSequencer)
+          @peerSequencers.push(peerSequencer)
+          @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
 
     )
 
     @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
+
     @amOnline.on 'value', (snapshot) =>
       console.log('yolo + ' + snapshot)
       @aPeerChanged(snapshot)
