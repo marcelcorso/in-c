@@ -44,21 +44,22 @@ class Sequencer
   play: (pattern) ->
     console.debug("start playing pattern")
 
-class PeerSequencer
+class PeerSequencer extends Sequencer
   constructor: (peerId) ->
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
 
-    @pattern = 1
-
-    # TODO subscribe for changes of that peer with
-    onPeerChange = (pattern) =>
-      @pattern = pattern
+    @firebase.get 'patternFor' + peerId, (value) ->
+      @pattern = value
       @play(@pattern)
-
       if @onUpdate?
         @onUpdate()
 
+    @firebase.getNotifiedWhenItChanges 'patternFor' + peerId, (value) ->
+      @pattern = value
+      @play(@pattern)
+      if @onUpdate?
+        @onUpdate()
 
 class InC
   constructor: ->
@@ -81,13 +82,14 @@ class InC
 
   startGroupSequencer: ->
 
-    @peerIds = ['vincent', 'corne', 'marcel']
+    # TODO 
+    @peerIds = ['Vincent', 'Corne', 'Marcel']
     @peerSequencers = []
     @peerSequencerUis = []
     for peerId in @peerIds
       peerSequencer = new PeerSequencer(peerId)
+      @peerSequencers.push(peerSequencer)
       @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
-      @peerSequencers.push(new PeerSequencer(peerId))
 
   startSequencer: ->
     console.debug("startSequencer")
