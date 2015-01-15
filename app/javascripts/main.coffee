@@ -23,7 +23,7 @@ class Ui
 
     $('#name').on 'change',  (e) =>
        inC.name = $('#name').val()
-=
+
     # more ui events go here
     $('#playAll').on 'click', (e) =>
       for s in @peerSequencers
@@ -90,16 +90,16 @@ class InC
   constructor: ->
     console.log('yolfsfsdfsd')
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
-    @firebase.authAnonymously((error, authdata) -> 
-
+    @firebase.authAnonymously( (error, authdata) ->
       console.log('Authed! ' + authdata)
-
-      )
-    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com.firebaseio.com/.info/connected');
-    @amOnline.on('value'), (snapshot) -> 
-      console.log('yolo + ' snapshot)
-      aPeerChanged(snapshot)
     )
+
+    
+    @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
+    @amOnline.on 'value', (snapshot) ->
+      console.log('yolo + ' + snapshot)
+    #   aPeerChanged(snapshot)
+
     @name = 'gimmeaname'
 
   aPeerChanged: (snapshot) ->
