@@ -1,1 +1,2 @@
-<h1>Hi, im a template on a global JST variable.</h1>
+<div>
+  <%= @sequencer.peerId %> is playing pattern <span id="s<%= @sequencer.peerId %>"><%= @sequencer.pattern %></span>
