@@ -17,7 +17,20 @@ class Ui
       nop(e)
       @sequencer.next()
       $('#currentPattern').html(@sequencer.pattern)
+
     # more ui events go here
+    $('#playAll').on 'click', (e) =>
+      for s in @peerSequencers
+        s.start()
+      for s in [@soloSequencer]
+        s.stop()
+ 
+    $('#playSolo').on 'click', (e) =>
+      for s in @peerSequencers
+        s.stop()
+      for s in [@soloSequencer]
+        s.start()
+      
 
 class PeerSequencerUi
   constructor: (peerSequencer) ->
@@ -41,7 +54,13 @@ class Sequencer
     @play(@pattern)
     
   play: (pattern) ->
-    console.debug("start playing pattern")
+    console.debug("if current playing, change to this pattern")
+
+  start: ->
+    console.debug("actually start playing")
+
+  stop: ->
+    console.debug("stop playing")
 
 class PeerSequencer extends Sequencer
   constructor: (peerId) ->
