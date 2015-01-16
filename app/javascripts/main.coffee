@@ -2,6 +2,8 @@
 nop = (e) ->
   e.preventDefault()
 
+cleanId = (id) ->
+  id.replace('anonymous:-', '')
 
 class Ui
   constructor: (sequencer) ->
@@ -11,21 +13,21 @@ class Ui
     console.debug($('#currentPattern'))
 
     $('#currentPattern').html(@sequencer.pattern)
+    $('#name').val(@sequencer.name)
 
   setupEvents: () =>
     $('#next').on 'click', (e) =>
       nop(e)
       @sequencer.next()
-
+      inC.firebase.child('users').child(inC.authid).child('pattern').set(@sequencer.pattern)
       $('#currentPattern').html(@sequencer.pattern)
 
     $('#name').on 'change',  (e) =>
-      inC.changedName($('#name').val())
+      @sequencer.name = $('#name').val()
+      inC.firebase.child('users').child(inC.authid).child('name').set(@sequencer.name)
+
       
     # more ui events go here
-
-
-
     $('#playAll').on 'click', (e) =>
       for s in @peerSequencers
         s.start()
@@ -44,10 +46,18 @@ class PeerSequencerUi
     @peerSequencer = peerSequencer
 
     $('#peerSequencers').append(JST['peerSequencer'](sequencer: peerSequencer))
-    @setEvents()
 
-  setEvents: () =>
-    $('#s' + @peerSequencer.peerId).html(@peerSequencer.pattern)
+  remove: () ->
+    $('#holder' + cleanId(@peerSequencer.id)).remove()
+    
+  refresh: () ->
+    console.debug('refresh')
+    console.debug(@peerSequencer)
+    console.debug($('#s' + @peerSequencer.id))
+    $('#s' + cleanId(@peerSequencer.id)).html(@peerSequencer.pattern)
+    $('#n' + cleanId(@peerSequencer.id)).html(@peerSequencer.name)
+    
+
 
 class Sequencer
   constructor: (id, name) ->
@@ -88,27 +98,12 @@ class Sequencer
 
   stop: ->
     console.debug("stop playing")
+    clearTimeout(@timeoutHandle)
 
 class InC
 
   constructor: ->
-    
-    @peerSequencers = []
-    @peerSequencerUis = []
-
     @firebase = new Firebase("blinding-heat-8749.firebaseio.com")
-    @firebase.authAnonymously( (error, authdata) =>
-      console.log('Authed! ' + authdata.uid)
-      @authid = authdata.uid
-      delref = @firebase.child('users').child(@authid).child('pattern').set(1)
-    )
-
-  changedName: (name) ->
-    @name = name
-    console.debug("changedname: " + name + "authid: " + @authid)
-    ref = @firebase.child('users').child(@authid).child('name').set(name)
-   #  ref.onDisconnect().remove()
-
 
   loadNewPatterns: (callback) ->
     @score = {}
@@ -143,67 +138,74 @@ class InC
 
       callback()
         
-  startSoloSequencer: ->
-    console.debug("startSoloSequencer:")
-    @soloSequencer = new Sequencer('439872432', 'solo')
-    @soloSequencer.player = new Player()
-    @soloSequencer.start()
-    @ui = new Ui(@soloSequencer)
-
   createSequencerForUser: (user) ->
-    peerId = user.key()
+    id = user.key()
     peerPattern = user.child('pattern').val()
     peerName = user.child('name').val()
-    peerSequencer = new Sequencer(peerId, peerName)
-    @peerSequencers[peerId] = peerSequencer
-    @peerSequencerUis[peerId] = new PeerSequencerUi(peerSequencer)
+    peerSequencer = new Sequencer(id, peerName)
+    @peerSequencers[id] = peerSequencer
+    @peerSequencerUis[id] = new PeerSequencerUi(peerSequencer)
 
 
-  startGroupSequencer: ->
+  buildGroupSequencer: ->
     @peerSequencers = {}
     @peerSequencerUis = {}
     # create all peer sequencers
-    @firebase.child('users').once('value', (users) =>
-      users.forEach((user) =>
-        @createSequencerForUser(user)
-        )
-      )
+    
+    # @firebase.child('users').once('value', (users) =>
+    #  console.debug('users once value')
+    #  users.forEach((user) =>
+    #    @createSequencerForUser(user)
+    #    )
+    #  )
 
     # watch for changes on the user data
     @firebase.child('users').on('child_changed', (user) =>
+      console.debug('users once child_changed')
       sequencer = @peerSequencers[user.key()]
-      sequencer.name = childSnapshot.child('name').val()
-      sequencer.pattern = childSnapshot.child('pattern').val()
-      sequencer.player = new Player()
+      sequencer.name = user.child('name').val()
+      sequencer.pattern = user.child('pattern').val()
+      console.debug('loooooooooo')
+      console.debug(@peerSequencerUis[user.key()])
+      @peerSequencerUis[user.key()].refresh()
     )
 
     @firebase.child('users').on('child_added', (user) =>
+      console.debug('users once child_ADDED')
       console.debug('child added')
       # create a new sequencer
       @createSequencerForUser(user)
     )
 
     @firebase.child('users').on('child_removed', (childSnapshot) =>
+      console.debug('users once child_REMOVED')
       sequencer = @peerSequencers[user.key()]
       sequencer.stop()
+      @peerSequencerUis[user.key()].remove()
+
       delete @peerSequencers[user.key()]
+      delete @peerSequencerUis[user.key()]
     )
-
-  startSequencer: ->
-    console.debug("startSequencer")
-    @startSoloSequencer()
-    @startGroupSequencer()
-
-  startPatternSharer: () ->
-    console.debug("startPatternSharer")
-
-  playSolo: ->
-    console.debug("playSolo")
 
   go: ->
     console.debug("go()")
-    @loadNewPatterns =>
-      @startSequencer()
+    @firebase.authAnonymously( (error, authdata) =>
+      console.log('Authed! ' + authdata.uid)
+      @authid = authdata.uid
+
+      console.debug("startSoloSequencer:")
+      @soloSequencer = new Sequencer(@authid, Math.random())
+      @soloSequencer.player = new Player()
+      @ui = new Ui(@soloSequencer)
+
+      # save to firebase
+      @firebase.child('users').child(@authid).set({pattern: @soloSequencer.pattern, name: @soloSequencer.name})
+
+      # load patterns from json
+      @loadNewPatterns =>
+        @buildGroupSequencer()
+        @soloSequencer.start()
+    )
 
 $ ->
   console.log("DOM is ready")

@@ -1,2 +1,3 @@
-<div>
-  <%= @sequencer.peerId %> is playing pattern <span id="s<%= @sequencer.peerId %>"><%= @sequencer.pattern %></span>
+<div id="holder<%= cleanId(@sequencer.id) %>">
+  <span id="n<%= cleanId(@sequencer.id) %>"><%= @sequencer.name %></span> is playing pattern <span id="s<%= cleanId(@sequencer.id) %>"><%= @sequencer.pattern %></span>
+</div>
