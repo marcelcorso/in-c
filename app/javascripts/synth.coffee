@@ -7,6 +7,10 @@ class Player
     @length = options['length'] || (Math.random() * 2)
     @register = options['register'] || Math.round((Math.random() * 7))
     @active_voices = {}
+
+
+    console.debug('create player with: ' )
+    console.debug(@filterValue)
     
   noteOn: (note) ->
     voice = new Voice(note, @filterValue, waveform(@waveform), @length, @register)

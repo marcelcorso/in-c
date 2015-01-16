@@ -167,7 +167,7 @@ class InC
       @createSequencerForUser(user)
     )
 
-    @firebase.child('users').on('child_removed', (childSnapshot) =>
+    @firebase.child('users').on('child_removed', (user) =>
       sequencer = @peerSequencers[user.key()]
       sequencer.stop()
       @peerSequencerUis[user.key()].remove()
@@ -184,7 +184,7 @@ class InC
 
       console.debug("startSoloSequencer:")
       @soloSequencer = new Sequencer(@authid, Math.random())
-      @soloSequencer.player = new Player()
+      @soloSequencer.player = new Player({})
       @ui = new Ui(@soloSequencer)
 
       # save to firebase
