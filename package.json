@@ -20,6 +20,7 @@
     "clean-css-brunch": ">= 1.0 < 1.8",
     "auto-reload-brunch": ">= 1.0 < 1.8",
     "eco-brunch": ">= 1.0 < 1.8",
+    "components": "*"
   },
   "devDependencies": {}
 }
