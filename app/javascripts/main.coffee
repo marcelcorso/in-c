@@ -132,6 +132,7 @@ class InC
     peerPattern = user.child('pattern').val()
     peerName = user.child('name').val()
     peerSequencer = new Sequencer(id, peerName)
+    peerSequencer.player = new Player()
     @peerSequencers[id] = peerSequencer
     @peerSequencerUis[id] = new PeerSequencerUi(peerSequencer)
 
