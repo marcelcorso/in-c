@@ -27,16 +27,14 @@ class Ui
       
     # more ui events go here
     $('#playAll').on 'click', (e) =>
-      for s in @peerSequencers
-        s.start()
-      for s in [@soloSequencer]
-        s.stop()
+      for k, v of inC.peerSequencers
+        v.start()
+      inC.soloSequencer.stop()
  
     $('#playSolo').on 'click', (e) =>
-      for s in @peerSequencers
-        s.stop()
-      for s in [@soloSequencer]
-        s.start()
+      for k, v of inC.peerSequencers
+        v.stop()
+      inC.soloSequencer.start()
       
 
 class PeerSequencerUi
@@ -77,7 +75,7 @@ class Sequencer
       for note in notesOnTick
         if note.subtype == 'noteOn'
           console.debug("on " + note.delta + " play " + note.name)
-          @player.noteOn(note.name, noteToFreq(note.name))
+          @player.noteOn(note.name)
           # PLAY note
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
@@ -136,10 +134,11 @@ class InC
     peerSequencer = new Sequencer(id, peerName)
     peerSequencer.player = new Player(
         filterValue: user.child('playerFilterValue').val(),
-        waveForm: user.child('playerWaveForm').val(),
+        waveform: user.child('playerWaveform').val(),
         lenght:  user.child('playerLength').val(),
         register:  user.child('playerRegister').val()
     )
+
     @peerSequencers[id] = peerSequencer
     @peerSequencerUis[id] = new PeerSequencerUi(peerSequencer)
 
@@ -189,14 +188,16 @@ class InC
       @ui = new Ui(@soloSequencer)
 
       # save to firebase
-      @firebase.child('users').child(@authid).set({
+      data = {
         pattern: @soloSequencer.pattern,
         name: @soloSequencer.name,
         playerFilterValue: @soloSequencer.player.filterValue,
-        playerWaveForm: @soloSequencer.player.waveForm,
+        playerWaveForm: @soloSequencer.player.waveform,
         playerLenght: @soloSequencer.player.length,
         playerRegister: @soloSequencer.player.register
-      })
+      }
+    
+      @firebase.child('users').child(@authid).set(data)
 
       # load patterns from json
       @loadNewPatterns =>
