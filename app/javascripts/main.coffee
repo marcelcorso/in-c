@@ -75,7 +75,7 @@ class Sequencer
       for note in notesOnTick
         if note.subtype == 'noteOn'
           console.debug("on " + note.delta + " play " + note.name)
-          @player.noteOn(note.name, midiToFreq(note.name))
+          @player.noteOn(note.name)
           # PLAY note
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
