@@ -129,9 +129,9 @@ class InC
 
       found = false
 
-      for sequencer in peerSequencerUis
-        if sequencer.peerid == peer
-          sequencer.update()
+      for sequencerui in @peerSequencerUis
+        if sequencerui.sequencer.peerId is peer
+          sequencerui.sequencer.pattern = pattern
           found = true
 
       if !found 
