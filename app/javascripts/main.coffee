@@ -65,22 +65,24 @@ class Sequencer
     console.debug("actually start playing")
     @tick = 0
     @timeoutHandle = setInterval( (=>
+      # console.debug("@tick: " + @tick)
       index = (@tick % inC.score[@pattern].maxDeltaTime)
+      # console.debug("index: " + index)
       if (index == 0)
         console.debug("----------------")
       notesOnTick = inC.score[@pattern].notesOnTick[index] || []
       for note in notesOnTick
         if note.subtype == 'noteOn'
-          console.debug("on " + note.deltaTime + " play " + note.noteNumber)
-          @player.noteOn(note.noteNumber, noteToFreq(note.noteNumber));
+          console.debug("on " + note.delta + " play " + note.name)
+          @player.noteOn(note.noteNumber, noteToFreq(note.noteNumber))
           # PLAY note
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
-          console.debug("on " + note.deltaTime + " stop " + note.noteNumber)
+          console.debug("on " + note.delta + " stop " + note.name)
           # noteOff(note.noteNumber);
 
       @tick += 1
-    ), 10000)
+    ), 100)
 
 
   stop: ->
@@ -142,36 +144,44 @@ class InC
     @firebase.set sequencer.pattern, ->
       console.debug('done setting the value on firebase')
 
-  loadMidis: (callback) ->
+  loadNewPatterns: (callback) ->
     @score = {}
-    @loaded = []
-    for pattern in [1..53]
-      @load1Midi(pattern, callback)
+    @rawScore = {}
+    # thanks https://github.com/sbma44/in_c_in_python
+    $.getJSON '/InC.json', (data) =>
+      $.each data, (pattern, notes) =>
+        delta = 0
+        @rawScore[pattern] = []
+        notesOnTick = {}
+        $.each notes, (i, arr) =>
+          note = {
+            name: arr[0],
+            octave: arr[1],
+            dynamics: arr[2],
+            duration: arr[3],
+            is_rest: arr[4]
+          }
+          @rawScore[pattern].push(note)
+          notesOnTick[delta] = [] unless notesOnTick[delta]?
+          noteOn = $.extend({subtype: 'noteOn', delta: delta}, note)
+          notesOnTick[delta].push(noteOn)
           
-  load1Midi: (pattern, callback) ->
-    $.getJSON '/midi/' + pattern + '.json', (data) =>
-      notesOnTick = {}
-      maxDeltaTime = 0
+          delta += (note.duration * 10)
 
-      $.each data.tracks[0], (i, note) ->
-        if note.subtype == 'noteOn' or note.subtype == 'noteOff'
-          notesOnTick[note.deltaTime] = [] unless notesOnTick[note.deltaTime]?
-          notesOnTick[note.deltaTime].push(note)
-          if note.deltaTime > maxDeltaTime
-            maxDeltaTime = note.deltaTime
+          noteOffDelta = delta - 4 # -4 is to give a rest before the next note
+          noteOff = $.extend({subtype: 'noteOff', delta: noteOffDelta}, note)
+          notesOnTick[noteOffDelta] = [] unless notesOnTick[noteOffDelta]?
+          notesOnTick[noteOffDelta].push(noteOff)
+      
+        @score[pattern] = {maxDeltaTime: delta, notesOnTick: notesOnTick}
 
-      @score[pattern] = {maxDeltaTime: maxDeltaTime, notesOnTick: notesOnTick}
-
-      @loaded.push(pattern)
-      if _.size(@loaded) == 53
-        callback()
-
-
-
-  pickInstrument: ->  
+      callback()
+        
+  pickInstrument: ->
     console.debug("pickInstrument")
 
   startSoloSequencer: ->
+    console.debug("startSoloSequencer:")
     @soloSequencer = new Sequencer()
     @soloSequencer.player = new Player()
     @soloSequencer.start()
@@ -200,7 +210,8 @@ class InC
     console.debug("playSolo")
 
   go: ->
-    @loadMidis =>
+    console.debug("go()")
+    @loadNewPatterns =>
       # @pickInstrument()
       @startSequencer()
       # @startPatternSharer()
