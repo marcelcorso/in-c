@@ -27,16 +27,14 @@ class Ui
       
     # more ui events go here
     $('#playAll').on 'click', (e) =>
-      for s in @peerSequencers
-        s.start()
-      for s in [@soloSequencer]
-        s.stop()
+      for k, v of inC.peerSequencers
+        v.start()
+      inC.soloSequencer.stop()
  
     $('#playSolo').on 'click', (e) =>
-      for s in @peerSequencers
-        s.stop()
-      for s in [@soloSequencer]
-        s.start()
+      for k, v of inC.peerSequencers
+        v.stop()
+      inC.soloSequencer.start()
       
 
 class PeerSequencerUi
