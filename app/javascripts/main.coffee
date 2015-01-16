@@ -84,14 +84,12 @@ class Sequencer
       notesOnTick = inC.score[@pattern].notesOnTick[index] || []
       for note in notesOnTick
         if note.subtype == 'noteOn'
-          1+2
-          # TODO console.debug("on " + note.delta + " play " + note.name)
-          # TODO @player.noteOn(note.name, noteToFreq(note.name))
+          console.debug("on " + note.delta + " play " + note.name)
+          @player.noteOn(note.name, noteToFreq(note.name))
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
-          # TODO console.debug("on " + note.delta + " stop " + note.name)
-          # TODO noteOff(note.name);
-          4+3
+          console.debug("on " + note.delta + " stop " + note.name)
+          # noteOff(note.name);
 
       @tick += 1
     ), 20)
