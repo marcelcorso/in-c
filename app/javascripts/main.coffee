@@ -199,6 +199,9 @@ class InC
     
       @firebase.child('users').child(@authid).set(data)
 
+      @fbuserref = new Firebase("blinding-heat-8749.firebaseio.com/users/" + @authid)
+      @fbuserref.onDisconnect().remove()
+
       # load patterns from json
       @loadNewPatterns =>
         @buildGroupSequencer()
