@@ -126,23 +126,27 @@ class InC
     @firebase.child("users").on("child_changed", (snapshot) =>
       peer = snapshot.key()
       pattern = snapshot.val()
+      console.log("Peer " + peer + " with name "+ snapshot.child('name').val() + " changed pattern")
 
-      console.log("peer " + peer + "changed pattern")
-      
       found = false
-      for s in @peerSequencerUis
-        if s.peerSequencer.PeerId == peer
-          s.peerSequencer.pattern = pattern
-          s.setEvents() 
-          console.log("found peerkey: " + peer + " changed")
-          found = true
-       
-        if !found
-          peerSequencer = new PeerSequencer(peer)
-          console.debug(peerSequencer)
-          @peerSequencers.push(peerSequencer)
-          @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
 
+      for sequencer in peerSequencerUis
+        if sequencer.peerid == peer
+          sequencer.update()
+          found = true
+
+      if !found 
+        create new sequencer with peerId
+        create new sequencerui with sequencer
+        push onto array
+
+
+
+
+
+      
+
+      
     )
 
     @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
