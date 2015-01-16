@@ -50,7 +50,7 @@ window.waveform = (id) ->
   waveforms[id]
 
 window.midiToFreq = (note, register) ->
-  notes = {C: midiToFreq(36), D: midiToFreq(38), E: midiToFreq(40), F: midiToFreq(41), G: midiToFreq(43), A: midiToFreq(45), B: midiToFreq(47) }
+  notes = {C: 36, D: 38, E: 40, F: 41, G: 43, A: 45, B: 47 }
   Math.pow(2, (notes[note] - (36 + (register * 12)) / 12) * 110)
 
 
