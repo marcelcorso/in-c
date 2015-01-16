@@ -134,9 +134,14 @@ class InC
     peerPattern = user.child('pattern').val()
     peerName = user.child('name').val()
     peerSequencer = new Sequencer(id, peerName)
+    peerSequencer.player = new Player(
+        filterValue: user.child('playerFilterValue').val(),
+        waveForm: user.child('playerWaveForm').val(),
+        lenght:  user.child('playerLength').val(),
+        register:  user.child('playerRegister').val()
+    )
     @peerSequencers[id] = peerSequencer
     @peerSequencerUis[id] = new PeerSequencerUi(peerSequencer)
-
 
   buildGroupSequencer: ->
     @peerSequencers = {}
@@ -152,24 +157,18 @@ class InC
 
     # watch for changes on the user data
     @firebase.child('users').on('child_changed', (user) =>
-      console.debug('users once child_changed')
       sequencer = @peerSequencers[user.key()]
       sequencer.name = user.child('name').val()
       sequencer.pattern = user.child('pattern').val()
-      console.debug('loooooooooo')
-      console.debug(@peerSequencerUis[user.key()])
       @peerSequencerUis[user.key()].refresh()
     )
 
     @firebase.child('users').on('child_added', (user) =>
-      console.debug('users once child_ADDED')
-      console.debug('child added')
       # create a new sequencer
       @createSequencerForUser(user)
     )
 
     @firebase.child('users').on('child_removed', (childSnapshot) =>
-      console.debug('users once child_REMOVED')
       sequencer = @peerSequencers[user.key()]
       sequencer.stop()
       @peerSequencerUis[user.key()].remove()
@@ -190,7 +189,14 @@ class InC
       @ui = new Ui(@soloSequencer)
 
       # save to firebase
-      @firebase.child('users').child(@authid).set({pattern: @soloSequencer.pattern, name: @soloSequencer.name})
+      @firebase.child('users').child(@authid).set({
+        pattern: @soloSequencer.pattern,
+        name: @soloSequencer.name,
+        playerFilterValue: @soloSequencer.player.filterValue,
+        playerWaveForm: @soloSequencer.player.waveForm,
+        playerLenght: @soloSequencer.player.length,
+        playerRegister: @soloSequencer.player.register
+      })
 
       # load patterns from json
       @loadNewPatterns =>
