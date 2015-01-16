@@ -10,8 +10,6 @@ class Ui
     @sequencer = sequencer
     @setupEvents()
 
-    console.debug($('#currentPattern'))
-
     $('#currentPattern').html(@sequencer.pattern)
     $('#name').val(@sequencer.name)
 
@@ -44,20 +42,14 @@ class Ui
 class PeerSequencerUi
   constructor: (peerSequencer) ->
     @peerSequencer = peerSequencer
-
     $('#peerSequencers').append(JST['peerSequencer'](sequencer: peerSequencer))
 
   remove: () ->
     $('#holder' + cleanId(@peerSequencer.id)).remove()
     
   refresh: () ->
-    console.debug('refresh')
-    console.debug(@peerSequencer)
-    console.debug($('#s' + @peerSequencer.id))
     $('#s' + cleanId(@peerSequencer.id)).html(@peerSequencer.pattern)
     $('#n' + cleanId(@peerSequencer.id)).html(@peerSequencer.name)
-    
-
 
 class Sequencer
   constructor: (id, name) ->
@@ -86,6 +78,7 @@ class Sequencer
         if note.subtype == 'noteOn'
           console.debug("on " + note.delta + " play " + note.name)
           @player.noteOn(note.name, noteToFreq(note.name))
+          # PLAY note
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
           console.debug("on " + note.delta + " stop " + note.name)
