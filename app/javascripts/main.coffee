@@ -76,15 +76,15 @@ class Sequencer
       for note in notesOnTick
         if note.subtype == 'noteOn'
           console.debug("on " + note.delta + " play " + note.name)
-          @player.noteOn(note.noteNumber, noteToFreq(note.noteNumber))
+          @player.noteOn(note.name, noteToFreq(note.name))
           # PLAY note
         else if note.subtype == 'noteOff'
           # STOP PLAYING note
           console.debug("on " + note.delta + " stop " + note.name)
-          # noteOff(note.noteNumber);
+          # noteOff(note.name);
 
       @tick += 1
-    ), 100)
+    ), 20)
 
   stop: ->
     console.debug("stop playing")
