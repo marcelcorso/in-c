@@ -90,11 +90,11 @@ class Sequencer
     console.debug("stop playing")
 
 class PeerSequencer extends Sequencer
-  constructor: (peerId) ->
+  constructor: (peerId, pattern) ->
     super()
     # TODO get pattern number from peer with peerId 
     @peerId = peerId
-
+    @pattern = pattern
     console.debug(peerId)
     inC.firebase.child('users').child(peerId).once 'value', (value) =>
       console.debug("ni: ")
@@ -130,22 +130,15 @@ class InC
       found = false
 
       for sequencerui in @peerSequencerUis
-        if sequencerui.sequencer.peerId is peer
-          sequencerui.sequencer.pattern = pattern
+        if sequencerui.peerSequencer.peerId is peer
+          sequencerui.peerSequencer.pattern = pattern
           found = true
 
       if !found 
-        create new sequencer with peerId
-        create new sequencerui with sequencer
-        push onto array
-
-
-
-
-
-      
-
-      
+        peersequencerui = new PeerSequencerUi(new PeerSequencer(peer, pattern))
+        @peerSequencerUis.push(peersequencerui)
+        peersequencerui
+        
     )
 
     @amOnline = new Firebase('https://blinding-heat-8749.firebaseio.com/.info/connected')
@@ -231,7 +224,9 @@ class InC
       snapshot.forEach((childSnapshot) => 
         console.debug('key : ' + childSnapshot.key() +  " value: " + childSnapshot.val())
         peerkey = childSnapshot.key()
-        peerSequencer = new PeerSequencer(peerkey)
+        peerPattern = childSnapshot.child('pattern').val()
+        console.debug('peerPattern: ' + peerPattern)
+        peerSequencer = new PeerSequencer(peerkey, )
         console.debug(peerSequencer)
         @peerSequencers.push(peerSequencer)
         @peerSequencerUis.push(new PeerSequencerUi(peerSequencer))
