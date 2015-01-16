@@ -9,12 +9,12 @@ class Player
     @active_voices = {}
     
   noteOn: (note) ->
-    voice = new Voice(midiToFreq(note, @register), @filterValue, waveform(@waveform), @length)
+    voice = new Voice(note, @filterValue, waveform(@waveform), @length, @register)
     voice.start()
 
 class Voice
-  constructor: (frequency, filterValue, waveform, length, register) ->
-    @frequency = midiToFreq(frequency, register)
+  constructor: (note, filterValue, waveform, length, register) ->
+    @frequency = midiToFreq(note, register)
     @filterValue = filterValue
     @waveform = waveform
     @length = length
@@ -50,7 +50,7 @@ window.waveform = (id) ->
   waveforms[id]
 
 window.midiToFreq = (note, register) ->
-  notes = {C: 36, D: 38, E: 40, F: 41, G: 43, A: 45, B: 47 }
-  Math.pow(2, (notes[note] - (36 + (register * 12)) / 12) * 110)
+  notes = { C: 36, D: 38, E: 40, F: 41, G: 43, A: 45, B: 47 }
+  440.0 * Math.pow(2, ((notes[note] + (register * 12)) - 69) / 12)
 
 
