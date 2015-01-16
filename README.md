@@ -21,3 +21,7 @@ Beside that, the output js will come out wrapped as it would if compiled by the 
     * `public/` dir is fully auto-generated and served by HTTP server.  Write your code in `app/` dir.
     * Place static files you want to be copied from `app/assets/` to `public/`.
     
+put it live: 
+$ ponyhost push in-c.ponyho.st
+
+http://in-c.ponyho.st/
