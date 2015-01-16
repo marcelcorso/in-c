@@ -4,7 +4,7 @@ class Player
   constructor: ->
     @filterValue = (Math.random() * 10000) + 300
     @waveform = Math.round((Math.random() * 3))
-    @length = (Math.random() * 2) + 1
+    @length = (Math.random() * 2)
     @register = Math.round((Math.random() * 7))
     @active_voices = {}
     
@@ -50,7 +50,9 @@ window.waveform = (id) ->
     waveforms[id]
 
 window.transpose = (frequency, register) ->
-    frequency * register
+    #frequency + (register * 65.41)
+    frequency
 
 window.noteToFreq = (note) ->
-    (Math.pow(2, (note - 69) / 12) * 440) / 4
+    notes = { C: 65.41, D: 73.42, E: 82.41, F: 87.31, G: 98.00, A: 110.00, B: 123.47 }
+    notes[note]
