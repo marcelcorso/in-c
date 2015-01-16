@@ -191,6 +191,9 @@ class InC
       # save to firebase
       @firebase.child('users').child(@authid).set({pattern: @soloSequencer.pattern, name: @soloSequencer.name})
 
+      @fbuserref = new Firebase("blinding-heat-8749.firebaseio.com/users/" + @authid)
+      @fbuserref.onDisconnect().remove()
+
       # load patterns from json
       @loadNewPatterns =>
         @buildGroupSequencer()
