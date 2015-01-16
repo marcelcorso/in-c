@@ -1,11 +1,11 @@
 window.context = new webkitAudioContext()
 
 class Player
-  constructor: ->
-    @filterValue = (Math.random() * 10000) + 300
-    @waveform = Math.round((Math.random() * 3))
-    @length = (Math.random() * 2)
-    @register = Math.round((Math.random() * 7))
+  constructor: (options) ->
+    @filterValue = options['filterValue'] || (Math.random() * 10000) + 300
+    @waveform = options['waveform'] || Math.round((Math.random() * 3))
+    @length = options['length'] || (Math.random() * 2)
+    @register = options['register'] || Math.round((Math.random() * 7))
     @active_voices = {}
     
   noteOn: (note) ->
